@@ -1,0 +1,11 @@
+1. Read the file
+2. Search for given parameters like unixTime and ISIM
+
+File name is us-time and time stamp is german time
+tag 52 = SendingTime
+tag 56 is the next tag -> TargetCompID
+
+
+first 2 messages:
+	g8=FIXT.1.19=7935=034=334249=Nodal Exchange, LLC52=20240620-22:00:08.51656=dbg_mdff_user310=143
+	g8=FIXT.1.19=7935=034=334349=Nodal Exchange, LLC52=20240620-22:00:38.51556=dbg_mdff_user310=146
