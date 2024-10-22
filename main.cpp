@@ -15,25 +15,7 @@ std::string extractTagValue(const std::string& message, const std::string& tag);
 
 int main()
 {
-/*     std::cout << "Test Case 1: " << std::endl;
-    std::cout << isDateInRange("20240620-22:40:09:23", "20240620-22:00:00:00", "20240621-00:00:00:00") << std::endl; // Expected: 1 (true)
-    std::cout << "Test Case 2: " << std::endl;
-    std::cout << isDateInRange("20240619-22:40:09", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 0 (false)
-    std::cout << "Test Case 3: " << std::endl;
-    std::cout << isDateInRange("20240622-22:40:09", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 0 (false)
-    std::cout << "Test Case 4: " << std::endl;
-    std::cout << isDateInRange("20240620-22:00:00", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 1 (true)
-    std::cout << "Test Case 5: " << std::endl;
-    std::cout << isDateInRange("20240621-00:00:00", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 1 (true)
-    std::cout << "Test Case 6: " << std::endl;
-    std::cout << isDateInRange("20240620-21:00:00", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 0 (false)
-    std::cout << "Test Case 7: " << std::endl;
-    std::cout << isDateInRange("20240621-01:00:00", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 0 (false)
-    std::cout << "Test Case 8: " << std::endl;
-    std::cout << isDateInRange("20240620-23:00:00", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 1 (true)
- */
-
-    filterByDateRange("test.sfd", "20240620-22:40:01", "20240620-22:40:35");
+    filterByDateRange("GW_FXNODX-01.FIX.20240621.sfd", "20240621-21:59:40", "20240621-21:59:40");
     return 0;
 }
 
@@ -117,7 +99,7 @@ void filterByDateRange(const std::string& filePath, const std::string& startDate
         }
 
         // Ensure that checksum ends with SOH
-        size_t checksumEnd = checksumPos + 3 + 3; // 3+3 = "10=" + 3 digits for checksum
+        size_t checksumEnd = checksumPos + 3 + 3; // 3 + 3 = "10=" + 3 digits for checksum
         if (buffer[checksumEnd] != SOH)
         {
             std::cerr << "Warning: Missing SOH after checksum at message starting at position " << startPos << std::endl;
@@ -126,7 +108,7 @@ void filterByDateRange(const std::string& filePath, const std::string& startDate
         }
 
         // Extract the full message //
-        std::string message = buffer.substr(startPos, checksumPos - startPos + 1);
+        std::string message = buffer.substr(startPos, checksumEnd + 1);
 
         // Extract sending time (tag 52) //
         std::string sendingTime = extractTagValue(message, "52");
