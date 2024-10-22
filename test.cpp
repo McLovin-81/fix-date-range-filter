@@ -5,7 +5,6 @@
 
 int main()
 {
-	std::string testString = "Hello";
 	const std::string& startDate = "20240620";
 	std::ifstream file("test.sfd", std::ios::binary);
 	std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

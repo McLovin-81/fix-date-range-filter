@@ -33,21 +33,23 @@ int main()
     std::cout << isDateInRange("20240620-23:00:00", "20240620-22:00:00", "20240621-00:00:00") << std::endl; // Expected: 1 (true)
  */
 
-    filterByDateRange("test.sfd", "20240620-22:40:08", "20240620-22:40:37");
-
+    filterByDateRange("test.sfd", "20240620-22:40:01", "20240620-22:40:35");
     return 0;
 }
 
 
-
+/**
+ * Parse a datetime string into a std::time_t
+*/
 std::time_t parseDateTime(const std::string& dateTimeStr)
 {
     std::tm tm = {};
-    std::istringstream ss(dateTimeStr.substr(0, 19));  // Parse up to seconds
+    std::istringstream ss(dateTimeStr.substr(0, 19));  // Only take up to seconds
 
     ss >> std::get_time(&tm, "%Y%m%d-%H:%M:%S");
     return std::mktime(&tm);
 }
+
 
 bool isDateInRange(const std::string& dateTime, const std::string& startDate, const std::string& endDate)
 {
@@ -58,25 +60,28 @@ bool isDateInRange(const std::string& dateTime, const std::string& startDate, co
     return dateTimeT >= startDateT && dateTimeT <= endDateT;
 }
 
+/**
+ * Extract the value of a tag (e.g. 52=) from a FIX message
+*/
 std::string extractTagValue(const std::string& message, const std::string& tag)
 {
     const char SOH = '\x01';
     std::string searchTag = tag + "=";
-    size_t pos = message.find(searchTag);
-    if (pos == std::string::npos)
+    size_t tagPos = message.find(searchTag);
+    if (tagPos == std::string::npos)
     {
         return "";
     }
 
-    size_t valueStart = pos + searchTag.length();
+    size_t valueStart = tagPos + searchTag.length();
     size_t valueEnd = message.find(SOH, valueStart);
-    if (valueEnd == std::string::npos)
-    {
-        valueEnd = message.length(); // NOTE: No needed there should be always a SOH in the end
-    }
-    return message.substr(valueStart, valueEnd - valueStart);
+
+    return (valueEnd == std::string::npos) ? "" : message.substr(valueStart, valueEnd - valueStart);
 }
 
+/**
+ * Filters FIX messages in a file by 'sending time (Tag 52)' within a date range
+*/
 void filterByDateRange(const std::string& filePath, const std::string& startDate, const std::string& endDate)
 {
     std::ifstream file(filePath, std::ios::binary);
@@ -86,7 +91,7 @@ void filterByDateRange(const std::string& filePath, const std::string& startDate
         return;
     }
 
-    // Read the entire file into a string buffer
+    // Read entire file into a string
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
 
@@ -95,45 +100,52 @@ void filterByDateRange(const std::string& filePath, const std::string& startDate
 
     while (pos < buffer.size())
     {
-        // Find the start of the message // 
+        // Find the start of a message (usually starts with 8=FIX) // 
         size_t startPos = buffer.find("8=FIX", pos);
         if (startPos == std::string::npos)
         {
-            break; // No more messages
+            break; // No more messages found
         }
 
-        // Find the end of the message (assuming it ends with "10=" followed by 3 digits and SOH) //
-        size_t endPos = buffer.find(SOH + "10=", startPos);
-        if (endPos == std::string::npos)
+        // Find the end of the message (assuming it ends with tag "10=" followed by 3 digits and SOH) //
+        size_t checksumPos = buffer.find("10=", startPos);
+        if (checksumPos == std::string::npos || checksumPos + 7 >= buffer.size())
         {
             std::cerr << "Warning: Incomplete or malformed message starting at position " << startPos << std::endl;
-            break; // Cannot process incomplete message
+            pos = startPos + 1; // Move to the next character and continue
+            continue;
         }
-        endPos = buffer.find(SOH, endPos + 1);  // Move to the end of checksum tag
-        if (endPos == std::string::npos)
+
+        // Ensure that checksum ends with SOH
+        size_t checksumEnd = checksumPos + 3 + 3; // 3+3 = "10=" + 3 digits for checksum
+        if (buffer[checksumEnd] != SOH)
         {
-            std::cerr << "Warning: Message at position " << startPos << " missing terminating SOH character after checksum" << std::endl;
-            break;
+            std::cerr << "Warning: Missing SOH after checksum at message starting at position " << startPos << std::endl;
+            pos = startPos + 1; // Continue searching
+            continue;
         }
 
         // Extract the full message //
-        std::string message = buffer.substr(startPos, endPos - startPos + 1);
+        std::string message = buffer.substr(startPos, checksumPos - startPos + 1);
+
         // Extract sending time (tag 52) //
         std::string sendingTime = extractTagValue(message, "52");
-        std::cout << "sendingTime var: " << sendingTime << std::endl;
+        
         if (sendingTime.empty())
         {
             std::cerr << "Warning: Message at position " << startPos << " missing Tag 52 (Sending Time)" << std::endl;
         }
         else
         {
+            // Check if the sending time is within the provided date range
             if (isDateInRange(sendingTime, startDate, endDate))
             {
+                std::cout << "sendingTime: " << sendingTime << std::endl;
                 std::cout << message << std::endl;
             }
         }
 
         // Move to the next message
-        pos = endPos + 1;
+        pos  = checksumEnd + 1;
     }   
 }
