@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
     std::string startDate = argv[2];
     std::string endDate = argv[3];
 
-    // filterByDateRange("GW_FXNODX-01.FIX.20240621.sfd", "20240621-21:59:40", "20240621-21:59:40");
     filterByDateRange(filePath, startDate, endDate);
     return 0;
 }
