@@ -19,7 +19,7 @@ To use this program, you need to pass three arguments to the command line:
 
 ```bash
 ./your_program_name GW_FXNODX-01.FIX.20240621.sfd 20240621-21:59:40 20240621-21:59:50
-
+```
 
 ### Date Format
 `SendingTime` in FIX messages should follow the format: `YYYYMMDD-HH:MM:SS`.
