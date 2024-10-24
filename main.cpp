@@ -13,9 +13,20 @@ bool isDateInRange(const std::string& dateTime, const std::string& startDate, co
 std::string extractTagValue(const std::string& message, const std::string& tag);
 
 
-int main()
+int main(int argc, char* argv[])
 {
-    filterByDateRange("GW_FXNODX-01.FIX.20240621.sfd", "20240621-21:59:40", "20240621-21:59:40");
+    if (argc != 4)
+    {
+        std::cerr << "Usage: " << argv[0] << " <filePath> <startDate> <endDate>" << std::endl;
+        return 1;
+    }
+
+    std::string filePath = argv[1];
+    std::string startDate = argv[2];
+    std::string endDate = argv[3];
+
+    // filterByDateRange("GW_FXNODX-01.FIX.20240621.sfd", "20240621-21:59:40", "20240621-21:59:40");
+    filterByDateRange(filePath, startDate, endDate);
     return 0;
 }
 

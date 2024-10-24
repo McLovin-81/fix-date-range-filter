@@ -10,8 +10,16 @@ This C++ program filters FIX messages in a file based on the `SendingTime` (Tag 
 
 ## Usage
 
-1. Place the FIX messages in a file. The program processes files with FIX protocol formatted messages.
-2. Specify the date range you want to filter by in the format `YYYYMMDD-HH:MM:SS`.
+To use this program, you need to pass three arguments to the command line:
+1. `filePath`: The path to the FIX log file.
+2. `startDate`: The start date and time in the format `YYYYMMDD-HH:MM:SS`.
+3. `endDate`: The end date and time in the format `YYYYMMDD-HH:MM:SS`.
+
+### Example Command:
+
+```bash
+./your_program_name GW_FXNODX-01.FIX.20240621.sfd 20240621-21:59:40 20240621-21:59:50
+
 
 ### Date Format
 `SendingTime` in FIX messages should follow the format: `YYYYMMDD-HH:MM:SS`.
